@@ -362,6 +362,9 @@
     <ClCompile Include="..\..\MyEngine\Sprite\SpriteRender.cpp">
       <Filter>MyEngine\Sprite</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\MyEngine\ForwardRender.cpp">
+      <Filter>MyEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\system.h">
@@ -648,6 +651,9 @@
     </ClInclude>
     <ClInclude Include="..\..\MyEngine\Sprite\SpriteRender.h">
       <Filter>MyEngine\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MyEngine\ForwardRender.h">
+      <Filter>MyEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

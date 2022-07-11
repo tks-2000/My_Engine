@@ -58,6 +58,11 @@ cbuffer shadowCb : register(b1)
 
 };
 
+cbuffer ditheringCb : register(b2)
+{
+	float ditherWeight;
+}
+
 ////////////////////////////////////////////////
 //関数宣言
 ////////////////////////////////////////////////
@@ -162,7 +167,7 @@ SPSOut PSMain( SPSIn psIn )
 
 	float clipRate = 1.0f - min(1.0f,eyeToClipRange / 100.0f);
 
-	clip(dither - 64 * clipRate);
+	clip(dither - 64 * ditherWeight);
 
 	SPSOut psOut;
 	

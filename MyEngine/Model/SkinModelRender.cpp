@@ -1,9 +1,13 @@
 #include "stdafx.h"
 #include "SkinModelRender.h"
+#include "../RenderingEngine.h"
 
 namespace render {
 	namespace model {
 
+		const char* FORWARD_RENDERING_FILEPATH = "Assets/shader/model.fx";
+
+		const char* DEFERRED_RENDERING_FILEPATH = "Assets/shader/deferredModel.fx";
 		const char* DEFERRED_PBR_FILEPATH = "Assets/shader/deferredModelPBR.fx";
 
 		SkinModelRender::SkinModelRender()
@@ -50,15 +54,7 @@ namespace render {
 		}
 
 
-		void SkinModelRender::Init(
-			const char* modelFilePath, 
-			const EnModelDrawTarget& drawTarget,
-			const char* skeletonPath, 
-			AnimationClip* animationClip, 
-			int animationNum, 
-			EnModelUpAxis enAxsis
-			
-		)
+		void SkinModelRender::Init(const StModelInitData& modelInitData)
 		{
 			//既に初期化されていたら実行しない
 			if (m_isInitd == true) {
@@ -66,84 +62,133 @@ namespace render {
 			}
 
 			//モデルのファイルパスを設定
-			m_modelFilePath = modelFilePath;
-			m_modelInitData.m_tkmFilePath = modelFilePath;
+			m_modelFilePath = modelInitData.tkmFilePath;
+			m_modelInitData.m_tkmFilePath = modelInitData.tkmFilePath;
 
-			m_modelInitData.m_fxFilePath = m_fxFilePath;
+			//m_modelInitData.m_fxFilePath = m_fxFilePath;
 
 			//モデルの上方向を設定
-			m_modelInitData.m_modelUpAxis = enAxsis;
+			m_modelInitData.m_modelUpAxis = modelInitData.modelUpAxis;
+
+			m_ditheringWeight = modelInitData.ditheringWeight;
 
 			//スケルトンのファイルパスが指定されていたらスケルトンを作成
-			if (skeletonPath != nullptr) {
+			if (modelInitData.tksFilePath != nullptr) {
 
 				//スケルトンのファイルパスを記憶しておく
-				m_skeletonFilePath = skeletonPath;
+				m_skeletonFilePath = modelInitData.tksFilePath;
 
-				m_skeleton.Init(skeletonPath);
+				m_skeleton.Init(modelInitData.tksFilePath);
 				//スケルトンをモデルに設定
 				m_modelInitData.m_skeleton = &m_skeleton;
 
 				//頂点シェーダーのエントリーポイントを指定
 				m_modelInitData.m_vsSkinEntryPointFunc = "VSSkinMain";
 
-				//アニメーションクリップとアニメーションの数が設定されていたらアニメーションを作成
-				if (animationClip != nullptr && animationNum != 0) {
+				//アニメーションのファイルサイズが0より大きかったら…
+				if (modelInitData.tkaFilePaths.size() > 0) {
+					for (int fileNum = 0; fileNum < modelInitData.tkaFilePaths.size(); fileNum++) {
+						m_animationClip.Load(modelInitData.tkaFilePaths[fileNum]);
+					}
 
-					m_animationClip = animationClip;
-
-					m_animation.Init(m_skeleton, m_animationClip, animationNum);
+					m_animation.Init(m_skeleton, &m_animationClip, modelInitData.tkaFilePaths.size());
 
 					m_animFlag = true;
 				}
+
+				
 			}
 			else {
 				//アニメーション無しの頂点シェーダーのエントリーポイントを設定
 				m_modelInitData.m_vsEntryPointFunc = "VSMain";
 			}
 
-			//モデルにライトの情報を渡す
-			m_modelInitData.m_expandConstantBuffer[0] = m_lig->GetLightAddress();
-			m_modelInitData.m_expandConstantBufferSize[0] = sizeof(m_lig->GetLight());
-
-			//モデルにシャドウマップの情報を渡す
-			m_modelInitData.m_expandShaderResoruceView[0] = &m_shadow->GetShadowMapTexture();
-
-			//モデルにライトカメラの情報を渡す
-			m_modelInitData.m_expandConstantBuffer[1] = (void*)&m_shadow->GetLightCameraMatrix();
-			m_modelInitData.m_expandConstantBufferSize[1] = sizeof(m_shadow->GetLightCameraMatrix());
-
-			
-
-			m_target = drawTarget;
-
-			//初期化情報でモデルを初期化する
-			m_model.Init(m_modelInitData);
-
-			switch (m_target)
+			switch (modelInitData.modelRenderFormat)
 			{
-			case enExpandModelGroup1: {
-				m_renderingEngine->SetExpansionDrawModel(m_target, &m_model);
-			}break;
-			case enExpandModelGroup2: {
-				m_renderingEngine->SetExpansionDrawModel(m_target, &m_model);	
-			}break;
-			case enExpandModelGroup3: {
-				m_renderingEngine->SetExpansionDrawModel(m_target, &m_model);
-			}break;
-			case enMainRenderTarget: {
-				//初期化したモデルをレンダリングエンジンに渡す
+			case enForwardRender: {
+				//モデルにライトの情報を渡す
+				m_modelInitData.m_expandConstantBuffer[0] = m_lig->GetLightAddress();
+				m_modelInitData.m_expandConstantBufferSize[0] = sizeof(m_lig->GetLight());
+
+				//モデルにシャドウマップの情報を渡す
+				m_modelInitData.m_expandShaderResoruceView[0] = &m_shadow->GetShadowMapTexture();
+
+				//モデルにライトカメラの情報を渡す
+				m_modelInitData.m_expandConstantBuffer[1] = (void*)&m_shadow->GetLightCameraMatrix();
+				m_modelInitData.m_expandConstantBufferSize[1] = sizeof(m_shadow->GetLightCameraMatrix());
+
+				m_modelInitData.m_fxFilePath = FORWARD_RENDERING_FILEPATH;
+
+				m_isDeferred = false;
+
+				m_model.Init(m_modelInitData);
+
 				m_renderingEngine->SetDrawModel(&m_model);
 			}break;
 			case enDeferrdRender: {
-				//初期化したモデルをレンダリングエンジンに渡す
-				m_renderingEngine->SetDrawModel(&m_model);
+				//モデルにライトカメラの情報を渡す
+				m_modelInitData.m_expandConstantBuffer[0] = (void*)&m_shadow->GetLightCameraMatrix();
+				m_modelInitData.m_expandConstantBufferSize[0] = sizeof(m_shadow->GetLightCameraMatrix());
+
+				m_modelInitData.m_expandConstantBuffer[1] = (void*)&m_ditheringWeight;
+				m_modelInitData.m_expandConstantBufferSize[1] = sizeof(m_ditheringWeight);
+
+				m_modelInitData.m_fxFilePath = DEFERRED_RENDERING_FILEPATH;
+
+				m_isDeferred = true;
+
+				m_model.Init(m_modelInitData);
+
+				m_renderingEngine->SetDeferredModel(&m_model);
+			}break;
+			case enDeferrdPBR: {
+				m_modelInitData.m_expandConstantBuffer[0] = (void*)&m_shadow->GetLightCameraMatrix();
+				m_modelInitData.m_expandConstantBufferSize[0] = sizeof(m_shadow->GetLightCameraMatrix());
+
+				m_modelInitData.m_expandConstantBuffer[1] = (void*)&m_ditheringWeight;
+				m_modelInitData.m_expandConstantBufferSize[1] = sizeof(m_ditheringWeight);
+
+				m_modelInitData.m_fxFilePath = DEFERRED_PBR_FILEPATH;
+
+				m_isDeferred = true;
+
+				m_model.Init(m_modelInitData);
+
+				m_renderingEngine->SetDeferredModel(&m_model);
 			}break;
 			default:
 				break;
 			}
 
-			m_isDeferred = false;
+			
+
+			
+
+			//m_target = drawTarget;
+
+			//初期化情報でモデルを初期化する
+			//m_model.Init(m_modelInitData);
+
+			//switch (m_target)
+			//{
+			//case enExpandModelGroup1: {
+			//	m_renderingEngine->SetExpansionDrawModel(m_target, &m_model);
+			//}break;
+			//case enExpandModelGroup2: {
+			//	m_renderingEngine->SetExpansionDrawModel(m_target, &m_model);	
+			//}break;
+			//case enExpandModelGroup3: {
+			//	m_renderingEngine->SetExpansionDrawModel(m_target, &m_model);
+			//}break;
+			//case enMainRenderTarget: {
+			//	//初期化したモデルをレンダリングエンジンに渡す
+			//	m_renderingEngine->SetDrawModel(&m_model);
+			//}break;
+			//default:
+			//	break;
+			//}
+
+			//m_isDeferred = false;
 
 			//初期化完了
 			m_isInitd = true;
@@ -186,9 +231,9 @@ namespace render {
 				//アニメーションクリップとアニメーションの数が設定されていたらアニメーションを作成
 				if (animationClip != nullptr && animationNum != 0) {
 
-					m_animationClip = animationClip;
+					//m_animationClip = animationClip;
 
-					m_animation.Init(m_skeleton, m_animationClip, animationNum);
+					//m_animation.Init(m_skeleton, m_animationClip, animationNum);
 
 					m_animFlag = true;
 				}

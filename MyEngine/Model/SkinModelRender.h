@@ -1,15 +1,12 @@
 #pragma once
+#include <vector>
 #include "../Light/Lighting.h"
+
 class AnimationClip;
 class RenderingEngine;
 class Lighting;
 class Shadow;
 
-namespace mainGame {
-	namespace map {
-		class MiniMap;
-	}
-}
 namespace render {
 	namespace model {
 		/// @brief モデルの描画先
@@ -17,8 +14,23 @@ namespace render {
 			enExpandModelGroup1,
 			enExpandModelGroup2,
 			enExpandModelGroup3,
-			enMainRenderTarget,
-			enDeferrdRender
+			enMainRenderTarget
+		};
+
+		enum EnModelRenderFormat {
+			enForwardRender,
+			enDeferrdRender,
+			enDeferrdPBR
+		};
+
+		struct StModelInitData {
+			const char* tkmFilePath = nullptr;
+			const char* tksFilePath = nullptr;
+			std::vector<const char*> tkaFilePaths;
+			EnModelUpAxis modelUpAxis = enModelUpAxisZ;
+			EnModelRenderFormat modelRenderFormat = enDeferrdRender;
+			const char* fxFilePath = nullptr;
+			float ditheringWeight = 0.0f;
 		};
 		
 		/// @brief 3Dモデルの表示を行うクラス
@@ -32,7 +44,7 @@ namespace render {
 			void Update();
 
 			/// @brief モデルの状態を入手
-			/// @return モデルのconst参照
+			/// @return モデルの参照
 			Model& GetModel(){ return m_model; }
 
 
@@ -67,14 +79,7 @@ namespace render {
 			/// @param animationClip アニメーションクリップ
 			/// @param animationNum アニメーションの数
 			/// @param enAxsis モデルの上方向
-			void Init(
-				const char* modelFilePath,
-				const EnModelDrawTarget& drawTarget = enMainRenderTarget,
-				const char* skeletonPath = nullptr,
-				AnimationClip* animationClip = nullptr,
-				int animationNum = 0,
-				EnModelUpAxis enAxsis = enModelUpAxisZ
-			);
+			void Init(const StModelInitData& modelInitData);
 
 			void InitDeferrd(
 				const char* modelFilePath,
@@ -112,6 +117,10 @@ namespace render {
 			/// @return スケルトンのアドレス
 			Skeleton* GetSkeleton() { return &m_skeleton; }
 
+			/// @brief ディザリングの重みを設定
+			/// @param weight 設定するディザリングの重み 1.0fで完全に透過 0.0fで透過無し
+			void SetDitheringWeight(const float weight) { m_ditheringWeight = weight; }
+
 			/// @brief 実行
 			void Execution();
 
@@ -135,7 +144,9 @@ namespace render {
 			/// @brief アニメーション
 			Animation m_animation;
 			/// @brief アニメーションクリップ
-			AnimationClip* m_animationClip;
+			AnimationClip m_animationClip;
+			/// @brief ディザリングの重み
+			float m_ditheringWeight = 0.0f;
 
 			/// @brief 影を生成するかどうかのフラグ
 			bool m_shadowFlag = false;

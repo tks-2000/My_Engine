@@ -23,14 +23,30 @@ namespace mainGame {
 
 		//タイトルシーンから始める
 		//TitleSceneStart();
+
+		render::model::StModelInitData utcModelInitData;
+		render::model::StModelInitData stageModelInitData;
+
+		utcModelInitData.tkmFilePath = "Assets/modelData/unityChan/utc_PBR.tkm";
+		utcModelInitData.modelRenderFormat = render::model::enDeferrdPBR;
+		utcModelInitData.tksFilePath = "Assets/modelData/unityChan/utc_PBR.tks";
+		utcModelInitData.tkaFilePaths.push_back("Assets/animData/unitychan/idle.tka");
+		utcModelInitData.modelUpAxis = enModelUpAxisY;
+
+		stageModelInitData.tkmFilePath = "Assets/modelData/bg/Stage2.tkm";
+		stageModelInitData.modelRenderFormat = render::model::enDeferrdPBR;
 		
 		m_model = NewGO<render::model::SkinModelRender>(PRIORITY_VERYLOW);
-		m_model->Init("Assets/modelData/unityChan/utc_PBR.tkm");
+		m_model->Init(utcModelInitData);
+
+		m_stageModel = NewGO<render::model::SkinModelRender>(PRIORITY_VERYLOW);
+		m_stageModel->Init(stageModelInitData);
 
 		//初期化完了
 		m_isInitd = true;
 
-		
+		g_camera3D->SetPosition(0.0f, 50.0f, 200.0f);
+		g_camera3D->SetTarget(0.0f, 50.0f, 0.0f);
 
 		return true;
 	}
@@ -43,7 +59,12 @@ namespace mainGame {
 			return;
 		}
 
+		m_weight += g_pad[0]->GetRStickYF() * 0.01f;
+
+		m_model->SetDitheringWeight(m_weight);
+
 		m_model->Execution();
+		m_stageModel->Execution();
 
 		/*if (m_state == enTitleScene) {
 			m_title->Execution();

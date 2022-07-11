@@ -64,6 +64,11 @@ cbuffer shadowCb : register(b1)
 
 };
 
+cbuffer ditheringCb : register(b2)
+{
+	float ditherWeight;
+}
+
 ////////////////////////////////////////////////
 //関数宣言
 ////////////////////////////////////////////////
@@ -137,8 +142,7 @@ SPSIn VSMainCore(SVSIn vsIn, uniform bool hasSkin)
 	psIn.normalInView = normalize(mul(mView,psIn.normal));	//カメラ空間の法線を求める
 	psIn.posInLVP = mul(mLVP,worldPos);
 
-	float4 objectPos = m[3];
-	float4 objectPosInCamera = mul(mView,psIn.worldPos);
+	
 	psIn.distToEye = length(psIn.pos);
 
 	return psIn;
@@ -174,7 +178,7 @@ SPSOut PSMain( SPSIn psIn )
 
 	float clipRate = 1.0f - min(1.0f,eyeToClipRange / 100.0f);
 
-	clip(dither - 64 * clipRate);
+	clip(dither - 64 * ditherWeight);
 
 	SPSOut psOut;
 	psOut.albedo = g_texture.Sample(g_sampler,psIn.uv);

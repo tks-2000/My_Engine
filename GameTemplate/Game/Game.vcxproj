@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -295,6 +295,7 @@
     <ClCompile Include="..\..\MyEngine\DeferredRender.cpp" />
     <ClCompile Include="..\..\MyEngine\Effect\EffectRender.cpp" />
     <ClCompile Include="..\..\MyEngine\Font\FontRender.cpp" />
+    <ClCompile Include="..\..\MyEngine\ForwardRender.cpp" />
     <ClCompile Include="..\..\MyEngine\Light\DirectionLight.cpp" />
     <ClCompile Include="..\..\MyEngine\Light\Lighting.cpp" />
     <ClCompile Include="..\..\MyEngine\Light\PointLight.cpp" />
@@ -308,6 +309,7 @@
     <ClCompile Include="..\..\MyEngine\PostEffect\Bloom.cpp" />
     <ClCompile Include="..\..\MyEngine\PostEffect\GaussianBlur.cpp" />
     <ClCompile Include="..\..\MyEngine\PostEffect\PostEffect.cpp" />
+    <ClCompile Include="..\..\MyEngine\Render.cpp" />
     <ClCompile Include="..\..\MyEngine\RenderingEngine.cpp" />
     <ClCompile Include="..\..\MyEngine\Shadow\Shadow.cpp" />
     <ClCompile Include="..\..\MyEngine\Sound\NameKey.cpp" />
@@ -399,6 +401,7 @@
     <ClInclude Include="..\..\MyEngine\DeferredRender.h" />
     <ClInclude Include="..\..\MyEngine\Effect\EffectRender.h" />
     <ClInclude Include="..\..\MyEngine\Font\FontRender.h" />
+    <ClInclude Include="..\..\MyEngine\ForwardRender.h" />
     <ClInclude Include="..\..\MyEngine\Light\DirectionLight.h" />
     <ClInclude Include="..\..\MyEngine\Light\Lighting.h" />
     <ClInclude Include="..\..\MyEngine\Light\PointLight.h" />
@@ -412,6 +415,7 @@
     <ClInclude Include="..\..\MyEngine\PostEffect\Bloom.h" />
     <ClInclude Include="..\..\MyEngine\PostEffect\GaussianBlur.h" />
     <ClInclude Include="..\..\MyEngine\PostEffect\PostEffect.h" />
+    <ClInclude Include="..\..\MyEngine\Render.h" />
     <ClInclude Include="..\..\MyEngine\RenderingEngine.h" />
     <ClInclude Include="..\..\MyEngine\RenderResource.h" />
     <ClInclude Include="..\..\MyEngine\Shadow\Shadow.h" />

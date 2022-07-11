@@ -2,7 +2,7 @@
 #include "MiniEngine.h"
 #include "ExEngine.h"
 
-/// @brief 他の場所でも必要になるレンダリングエンジンの定数
+/// @brief 他の場所でも必要になるレンダリングエンジンの定数や構造体
 namespace render {
 
 	static const char* RENDERING_ENGINE_NAME = "RenderingEngine";

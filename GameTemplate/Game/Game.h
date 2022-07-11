@@ -114,6 +114,11 @@ namespace mainGame {
 		SceneTransition* m_sceneTransition = nullptr;
 
 		render::model::SkinModelRender* m_model = nullptr;
+
+		render::model::SkinModelRender* m_stageModel = nullptr;
+
+		float m_weight = 0.0f;
+
 	};
 
 }
